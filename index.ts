@@ -1,3 +1,5 @@
+import * as GeoJSON from "geojson";
+import { FeatureCollection } from "geojson";
 import * as path from "path";
 import { promises } from "fs";
 import { getFileNamesFromFolder } from "./src/files/get-file-names-from-folder";
@@ -6,7 +8,12 @@ import {
   SimplifyOfferWithHistory,
 } from "./src/interfaces/simplify-offer";
 import * as chalk from "chalk";
-import { getDistFileNames, getDistPath, getSrcPaths } from "./src/files/paths";
+import {
+  getDistFileNames,
+  getDistGeoJSONFileNames,
+  getDistPath,
+  getSrcPaths,
+} from "./src/files/paths";
 
 export async function mergeOffers() {
   global["appRoot"] = path.resolve(__dirname);
@@ -91,7 +98,7 @@ async function saveCombinedOffers(combinedOffers: SimplifyOfferWithHistory[]) {
     { encoding: "utf8" }
   );
   consoleLog(
-    chalk.green(`${combinedOffers.length} combined offers saver to ${fileDist}`)
+    chalk.green(`${combinedOffers.length} combined offers saved to ${fileDist}`)
   );
 }
 
@@ -120,4 +127,30 @@ export function consoleLog(content: any): void {
       dateNow.getHours() + 1
     }:${dateNow.getMinutes()}:${dateNow.getSeconds()}.${dateNow.getMilliseconds()}] ${content}`
   );
+}
+
+function toGeoJSON(data: SimplifyOfferWithHistory[]): FeatureCollection {
+  return GeoJSON.parse(data, { Point: ["latitude", "longitude"] });
+}
+
+export async function convertOffersToGeoJSON() {
+  const offers = JSON.parse(
+    await promises.readFile(
+      path.join(global["appRoot"], getDistPath(), getDistFileNames()),
+      "utf8"
+    )
+  ) as SimplifyOfferWithHistory[];
+
+  const geoJSON = toGeoJSON(offers);
+  const fileDist = path.join(
+    global["appRoot"],
+    getDistPath(),
+    getDistGeoJSONFileNames()
+  );
+  await promises.writeFile(
+    fileDist,
+    JSON.stringify(geoJSON, undefined, 2),
+    "utf8"
+  );
+  consoleLog(chalk.green(`GeoJSON saved to ${fileDist}`));
 }
