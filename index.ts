@@ -15,19 +15,31 @@ export async function mergeOffers() {
 
   const combinedOffers: SimplifyOfferWithHistory[] = [];
   const fileNames = await getFileNamesFromFolder();
-  for (const fileName of fileNames) {
+  for (const [fileIndex, fileName] of fileNames.entries()) {
     const srcFileOffers = JSON.parse(
       await promises.readFile(
         path.join(global["appRoot"], srcPaths.singleRoom, fileName),
         { encoding: "utf-8" }
       )
     ) as SimplifyOffer[];
-    srcFileOffers.forEach((newOffer) => {
+    const srcFileOffersLength = srcFileOffers.length;
+    consoleLog(
+      chalk.blue(
+        `\n[${fileIndex + 1}/${
+          fileNames.length
+        }] File: ${fileName} contains ${srcFileOffersLength} offers`
+      )
+    );
+    srcFileOffers.forEach((newOffer, index) => {
       const existingOffer = getExistingOffer(combinedOffers, newOffer);
       if (existingOffer !== undefined) {
         consoleLog(
           chalk.yellow(
-            `Duplicate: existing offer ID: ${existingOffer.id}, new offer ID: ${newOffer.id}`
+            `[${
+              index + 1
+            }/${srcFileOffersLength}] Duplicate: existing offer ID: ${
+              existingOffer.id
+            }, new offer ID: ${newOffer.id}`
           )
         );
         fillHistory(existingOffer, newOffer);
