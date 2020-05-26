@@ -1,0 +1,22 @@
+{
+  "name": "combine-cian-offers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Artem Beresnev",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "2.0.5",
+    "tslint": "6.1.1",
+    "typescript": "3.8.3"
+  },
+  "dependencies": {
+    "chalk": "4.0.0",
+    "geojson": "0.5.0",
+    "json-2-csv": "3.6.2",
+    "ts-node": "8.9.0"
+  }
+}
