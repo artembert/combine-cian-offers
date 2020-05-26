@@ -8,8 +8,6 @@ import {
 import { distFileNames, distPath, srcPaths } from "./src/files/paths";
 import * as chalk from "chalk";
 
-(async () => await mergeOffers())();
-
 export async function mergeOffers() {
   global["appRoot"] = path.resolve(__dirname);
 
@@ -115,7 +113,7 @@ function getPriceDate(offer: SimplifyOffer): string {
   return new Date(timeStamp).toISOString();
 }
 
-function consoleLog(content: any): void {
+export function consoleLog(content: any): void {
   const dateNow = new Date();
   console.log(
     `[${
