@@ -18,7 +18,7 @@ export async function mergeOffers() {
   for (const [fileIndex, fileName] of fileNames.entries()) {
     const srcFileOffers = JSON.parse(
       await promises.readFile(
-        path.join(global["appRoot"], srcPaths.singleRoom, fileName),
+        path.join(global["appRoot"], srcPaths.oneRoom, fileName),
         { encoding: "utf-8" }
       )
     ) as SimplifyOffer[];
@@ -84,8 +84,8 @@ function fillHistory(
 async function saveCombinedOffers(combinedOffers: SimplifyOfferWithHistory[]) {
   const fileDist = path.join(
     global["appRoot"],
-    distPath.singleRoom,
-    distFileNames.singleRoom
+    distPath.oneRoom,
+    distFileNames.oneRoom
   );
   await promises.writeFile(
     fileDist,
