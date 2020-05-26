@@ -6,6 +6,7 @@ import {
   SimplifyOfferWithHistory,
 } from "./src/interfaces/simplify-offer";
 import { distFileNames, distPath, srcPaths } from "./src/files/paths";
+import * as chalk from "chalk";
 
 (async () => await mergeOffers())();
 
@@ -24,14 +25,16 @@ export async function mergeOffers() {
     srcFileOffers.forEach((newOffer) => {
       const existingOffer = getExistingOffer(combinedOffers, newOffer);
       if (existingOffer !== undefined) {
-        console.error(
-          `\nDuplicate: 
-          existing offer ID: ${existingOffer.id},
-          new offer ID: ${newOffer.id}\n`
+        consoleLog(
+          chalk.yellow(
+            `Duplicate: existing offer ID: ${existingOffer.id}, new offer ID: ${newOffer.id}`
+          )
         );
         fillHistory(existingOffer, newOffer);
       } else {
-        console.log(`\nOffer with ID [${newOffer.id}] added to common list`);
+        consoleLog(
+          chalk.white(`Offer with ID [${newOffer.id}] added to common list`)
+        );
         combinedOffers.push(addHistoryToOffer(newOffer));
       }
     });
@@ -67,10 +70,18 @@ function fillHistory(
 }
 
 async function saveCombinedOffers(combinedOffers: SimplifyOfferWithHistory[]) {
+  const fileDist = path.join(
+    global["appRoot"],
+    distPath.singleRoom,
+    distFileNames.singleRoom
+  );
   await promises.writeFile(
-    path.join(global["appRoot"], distPath.singleRoom, distFileNames.singleRoom),
+    fileDist,
     JSON.stringify(combinedOffers, undefined, 2),
     { encoding: "utf8" }
+  );
+  consoleLog(
+    chalk.green(`${combinedOffers.length} combined offers saver to ${fileDist}`)
   );
 }
 
@@ -90,4 +101,13 @@ function getPriceDate(offer: SimplifyOffer): string {
     ? Date.parse(offer.date)
     : offer.download_date || undefined;
   return new Date(timeStamp).toISOString();
+}
+
+function consoleLog(content: any): void {
+  const dateNow = new Date();
+  console.log(
+    `[${
+      dateNow.getHours() + 1
+    }:${dateNow.getMinutes()}:${dateNow.getSeconds()}.${dateNow.getMilliseconds()}] ${content}`
+  );
 }
