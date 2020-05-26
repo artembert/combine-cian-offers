@@ -5,8 +5,8 @@ import {
   SimplifyOffer,
   SimplifyOfferWithHistory,
 } from "./src/interfaces/simplify-offer";
-import { distFileNames, distPath, srcPaths } from "./src/files/paths";
 import * as chalk from "chalk";
+import { getDistFileNames, getDistPath, getSrcPaths } from "./src/files/paths";
 
 export async function mergeOffers() {
   global["appRoot"] = path.resolve(__dirname);
@@ -16,7 +16,7 @@ export async function mergeOffers() {
   for (const [fileIndex, fileName] of fileNames.entries()) {
     const srcFileOffers = JSON.parse(
       await promises.readFile(
-        path.join(global["appRoot"], srcPaths.oneRoom, fileName),
+        path.join(global["appRoot"], getSrcPaths(), fileName),
         { encoding: "utf-8" }
       )
     ) as SimplifyOffer[];
@@ -82,8 +82,8 @@ function fillHistory(
 async function saveCombinedOffers(combinedOffers: SimplifyOfferWithHistory[]) {
   const fileDist = path.join(
     global["appRoot"],
-    distPath.oneRoom,
-    distFileNames.oneRoom
+    getDistPath(),
+    getDistFileNames()
   );
   await promises.writeFile(
     fileDist,

@@ -1,3 +1,7 @@
 import { mergeOffers } from "./index";
+import { defineApartmentType } from "./apartment-type-map";
 
-(async () => await mergeOffers())();
+(async () => {
+  defineApartmentType();
+  await mergeOffers();
+})();
