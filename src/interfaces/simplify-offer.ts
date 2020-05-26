@@ -22,6 +22,7 @@ export interface SimplifyOffer extends AbstractOffer {
 
 export interface SimplifyOfferWithHistory extends AbstractOffer {
   history?: OfferHistory[];
+  price_per_m?: number;
 }
 
 export interface OfferHistory {

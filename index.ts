@@ -140,6 +140,9 @@ export async function convertOffersToGeoJSON() {
       "utf8"
     )
   ) as SimplifyOfferWithHistory[];
+  offers.map(
+    (offer) => (offer.price_per_m = Math.round(calcAveragePricePerMeter(offer)))
+  );
 
   const geoJSON = toGeoJSON(offers);
   const fileDist = path.join(
@@ -153,4 +156,18 @@ export async function convertOffersToGeoJSON() {
     "utf8"
   );
   consoleLog(chalk.green(`GeoJSON saved to ${fileDist}`));
+}
+
+function calcAveragePricePerMeter(offer: SimplifyOfferWithHistory): number {
+  if (isNaN(+offer.total_area)) {
+    return null;
+  }
+  return (
+    offer.history.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.price,
+      0
+    ) /
+    offer.history.length /
+    +offer.total_area
+  );
 }
