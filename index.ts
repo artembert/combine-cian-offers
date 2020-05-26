@@ -1,15 +1,18 @@
 import * as path from "path";
 import { promises } from "fs";
 import { getFileNamesFromFolder } from "./src/files/get-file-names-from-folder";
-import { SimplifyOffer } from "./src/interfaces/simplify-offer";
-import { srcPaths } from "./src/files/paths";
+import {
+  SimplifyOffer,
+  SimplifyOfferWithHistory,
+} from "./src/interfaces/simplify-offer";
+import { distFileNames, distPath, srcPaths } from "./src/files/paths";
 
 (async () => await mergeOffers())();
 
 export async function mergeOffers() {
   global["appRoot"] = path.resolve(__dirname);
 
-  const combinedOffers: SimplifyOffer[] = [];
+  const combinedOffers: SimplifyOfferWithHistory[] = [];
   const fileNames = await getFileNamesFromFolder();
   for (const fileName of fileNames) {
     const srcFileOffers = JSON.parse(
@@ -26,19 +29,21 @@ export async function mergeOffers() {
           existing offer ID: ${existingOffer.id},
           new offer ID: ${newOffer.id}\n`
         );
-        process.exit(1);
-        return;
+        fillHistory(existingOffer, newOffer);
+      } else {
+        console.log(`\nOffer with ID [${newOffer.id}] added to common list`);
+        combinedOffers.push(addHistoryToOffer(newOffer));
       }
-      console.log(`\nOffer with ID [${newOffer.id}] added to common list`);
-      combinedOffers.push(newOffer);
     });
   }
+  await saveCombinedOffers(combinedOffers);
+  process.exit(0);
 }
 
 function getExistingOffer(
-  combinedOffers: SimplifyOffer[],
+  combinedOffers: SimplifyOfferWithHistory[],
   newOffer: SimplifyOffer
-): SimplifyOffer | undefined {
+): SimplifyOfferWithHistory | undefined {
   return combinedOffers.find((offerFromCommonList) => {
     return (
       offerFromCommonList.id === newOffer.id ||
@@ -49,4 +54,40 @@ function getExistingOffer(
         offerFromCommonList.floors_count === offerFromCommonList.floors_count)
     );
   });
+}
+
+function fillHistory(
+  existingOffer: SimplifyOfferWithHistory,
+  newOffer: SimplifyOffer
+): void {
+  existingOffer.history.push({
+    updatedDate: getPriceDate(newOffer),
+    price: newOffer.price,
+  });
+}
+
+async function saveCombinedOffers(combinedOffers: SimplifyOfferWithHistory[]) {
+  await promises.writeFile(
+    path.join(global["appRoot"], distPath.singleRoom, distFileNames.singleRoom),
+    JSON.stringify(combinedOffers, undefined, 2),
+    { encoding: "utf8" }
+  );
+}
+
+function addHistoryToOffer(newOffer: SimplifyOffer): SimplifyOfferWithHistory {
+  newOffer["history"] = [];
+  newOffer["history"].push({
+    updatedDate: getPriceDate(newOffer),
+    price: newOffer.price,
+  });
+  delete newOffer.price;
+  delete newOffer.date;
+  return newOffer;
+}
+
+function getPriceDate(offer: SimplifyOffer): string {
+  const timeStamp = !isNaN(Date.parse(offer.date))
+    ? Date.parse(offer.date)
+    : offer.download_date || undefined;
+  return new Date(timeStamp).toISOString();
 }
